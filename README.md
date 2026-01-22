@@ -143,7 +143,7 @@ const NOWPLAYING_URL =
 
   const COMMAND_URL =
     (location.protocol === "https:")
-      ? "https://nowplaying.grbzhome.com/nowplaying"
+      ? "https://nowplaying.grbzhome.com/command"
       : "http://192.168.1.29:8787/command";
 ```
 
