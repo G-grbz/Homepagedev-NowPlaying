@@ -169,6 +169,33 @@ const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
 
 This variable is used to provide the **write key** required by the NowPlaying service.
 
+## Automatic Write Key Storage (localStorage)
+
+To automatically store `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` in the browser’s **localStorage**, the `SEED_TOKEN` defined on the server **must match** the token sent from the client.
+
+### How it works
+
+On the client side, a seed token is sent via request headers:
+
+```js
+const headers = { "X-Seed-Token": "change-me" };
+```
+
+On the server side, you must define the same value in your `.env` file:
+
+```env
+SEED_TOKEN=change-me
+```
+
+If these two values are identical:
+
+* The server accepts the initial handshake
+* `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` is securely written into `localStorage`
+* Subsequent requests can use this key automatically
+
+If the values **do not match**, the request is rejected and **no data is written** to localStorage.
+
+
 ---
 
 ### Option 1: Using environment variables (recommended)
