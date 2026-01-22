@@ -138,13 +138,13 @@ Then edit these lines in the script:
 ```js
 const NOWPLAYING_URL =
     (location.protocol === "https:")
-      ? "https://nowplaying.grbzhome.com/nowplaying"
-      : "http://192.168.1.29:8787/nowplaying";
+      ? "https://nowplaying.example.com/nowplaying"
+      : "http://<server-ip>:8787/nowplaying";
 
   const COMMAND_URL =
     (location.protocol === "https:")
-      ? "https://nowplaying.grbzhome.com/command"
-      : "http://192.168.1.29:8787/command";
+      ? "https://nowplaying.example.com/command"
+      : "http://<server-ip>:8787/command";
 ```
 
 Replace with your real endpoints.
@@ -153,8 +153,8 @@ Examples:
 
 * **LAN / HTTP**
 
-  * `http://192.168.1.29:8787/nowplaying`
-  * `http://192.168.1.29:8787/command`
+  * `http://<server-ip>/nowplaying`
+  * `http://<server-ip>/command`
 
 * **Reverse proxy / HTTPS**
 
