@@ -137,14 +137,14 @@ Then edit these lines in the script:
 
 ```js
 const NOWPLAYING_URL =
-  (location.protocol === "https:")
-    ? "https://proxy.domain.adresiniz(varsa)/nowplaying"
-    : "http://nowplaying-ip-adresiniz:8787/nowplaying";
+    (location.protocol === "https:")
+      ? "https://nowplaying.grbzhome.com/nowplaying"
+      : "http://192.168.1.29:8787/nowplaying";
 
-const COMMAND_URL =
-  (location.protocol === "https:")
-    ? "https://proxy.domain.adresiniz(varsa)/command"
-    : "http://nowplaying-ip-adresiniz:8787/command";
+  const COMMAND_URL =
+    (location.protocol === "https:")
+      ? "https://nowplaying.grbzhome.com/nowplaying"
+      : "http://192.168.1.29:8787/command";
 ```
 
 Replace with your real endpoints.
@@ -160,6 +160,39 @@ Examples:
 
   * `https://nowplaying.example.com/nowplaying`
   * `https://nowplaying.example.com/command`
+ 
+ ### Write Key Configuration
+
+```js
+const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
+```
+
+This variable is used to provide the **write key** required by the NowPlaying service.
+
+---
+
+### Option 1: Using environment variables (recommended)
+
+If you are using environment variables with **Homepage.dev**, add your generated write key to your `.env` file:
+
+```env
+HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY=your-write-key-here
+```
+
+Homepage will automatically inject this value into `custom.js` at runtime.
+
+---
+
+### Option 2: Without environment variables
+
+If you are **not** using environment variables, update `custom.js` manually and replace the placeholder with your write key:
+
+```js
+const ENV_RAW = "your-write-key-here";
+```
+
+---
+
 
 ### 2) Add the CSS to HomePageDev `custom.css`
 
