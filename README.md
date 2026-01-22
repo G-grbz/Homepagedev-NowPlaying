@@ -118,8 +118,8 @@ docker compose up -d
 
 ### 5) Sanity check
 
-* `http://<server-ip>:8787/` → `nowplaying ok (multi-source + mpris)`
-* `http://<server-ip>:8787/nowplaying` → JSON payload
+* `http://your-nowplaying-host:8787/` → `nowplaying ok (multi-source + mpris)`
+* `http://your-nowplaying-host:8787/nowplaying` → JSON payload
 
 ---
 
@@ -139,12 +139,12 @@ Then edit these lines in the script:
 const NOWPLAYING_URL =
     (location.protocol === "https:")
       ? "https://nowplaying.example.com/nowplaying"
-      : "http://<server-ip>:8787/nowplaying";
+      : "http://your-nowplaying-host:8787/nowplaying";
 
   const COMMAND_URL =
     (location.protocol === "https:")
       ? "https://nowplaying.example.com/command"
-      : "http://<server-ip>:8787/command";
+      : "http://your-nowplaying-host:8787/command";
 ```
 
 Replace with your real endpoints.
