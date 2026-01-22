@@ -1,0 +1,9 @@
+{
+  "name": "nowplaying",
+  "type": "module",
+  "dependencies": {
+    "dbus-next": "^0.10.2",
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
+  }
+}

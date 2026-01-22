@@ -1,0 +1,38 @@
+#docker-compose.yml
+
+version: "3.9"
+
+services:
+  nowplaying:
+    image: node:20-alpine
+    container_name: nowplaying
+    restart: unless-stopped
+
+    working_dir: ${APP_WORKDIR:-/app}
+    user: "${UID:-1000}:${GID:-1000}"
+
+    volumes:
+      # Application source / config
+      - ${NOWPLAYING_APP_DIR:-./nowplaying}:${APP_WORKDIR:-/app}
+
+      # DBus (required for MPRIS on Linux)
+      - ${XDG_RUNTIME_DIR:-/run/user/1000}:${XDG_RUNTIME_DIR:-/run/user/1000}
+
+      # Optional: system temp (read-only)
+      - /tmp:/tmp:ro
+
+      # Optional: shared cache (read-only)
+      - ${CACHE_DIR:-${HOME}/.cache}:${CACHE_DIR:-${HOME}/.cache}:ro
+
+    command: sh -lc "${START_COMMAND:-npm install && node server.js}"
+
+    environment:
+      PORT: ${PORT:-8787}
+      WRITE_KEY: ${WRITE_KEY:-change-me}
+      SEED_TOKEN: ${SEED_TOKEN:-change-me}
+
+      ENABLE_MPRIS: ${ENABLE_MPRIS:-1}
+      DBUS_SESSION_BUS_ADDRESS: ${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/1000/bus}
+
+    ports:
+      - "${PORT:-8787}:${PORT:-8787}"
