@@ -18,7 +18,7 @@
 
   const COMMAND_URL =
     (location.protocol === "https:")
-      ? "https://nowplaying.example.com/nowplaying"
+      ? "https://nowplaying.example.com/command"
       : "http://your-nowplaying-host:8787/command";
 
   const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
