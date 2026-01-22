@@ -326,6 +326,10 @@
     const toggle = mkBtn("hp-np-toggle", ICONS.play, "Play / Pause", "toggle");
     const next = mkBtn("hp-np-next", ICONS.next, "Next", "next");
 
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "hp-np-buttons";
+    btnWrap.append(prev, toggle, next);
+
     const barEl = document.createElement("div");
     barEl.className = "hp-np-bar";
 
@@ -363,7 +367,7 @@
     time.id = "hp-nowplaying-time";
     time.textContent = "0:00 / 0:00";
 
-    controls.append(prev, toggle, next, barEl, time);
+    controls.append(btnWrap, barEl, time);
     el.append(meta, controls);
     bar.prepend(el);
 
