@@ -169,6 +169,27 @@ const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
 
 This variable is used to provide the **write key** required by the NowPlaying service.
 
+
+### Option 1: Using environment variables (recommended)
+
+If you are using environment variables with **Homepage.dev**, add your generated write key to your `.env` file:
+
+```env
+HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY=your-write-key-here
+```
+
+Homepage will automatically inject this value into `custom.js` at runtime.
+
+---
+
+### Option 2: Without environment variables
+
+If you are **not** using environment variables, update `custom.js` manually and replace the placeholder with your write key:
+
+```js
+const ENV_RAW = "your-write-key-here";
+```
+
 ## Automatic Write Key Storage (localStorage)
 
 To automatically store `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` in the browser’s **localStorage**, the `SEED_TOKEN` defined on the server **must match** the token sent from the client.
@@ -194,29 +215,6 @@ If these two values are identical:
 * Subsequent requests can use this key automatically
 
 If the values **do not match**, the request is rejected and **no data is written** to localStorage.
-
-
----
-
-### Option 1: Using environment variables (recommended)
-
-If you are using environment variables with **Homepage.dev**, add your generated write key to your `.env` file:
-
-```env
-HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY=your-write-key-here
-```
-
-Homepage will automatically inject this value into `custom.js` at runtime.
-
----
-
-### Option 2: Without environment variables
-
-If you are **not** using environment variables, update `custom.js` manually and replace the placeholder with your write key:
-
-```js
-const ENV_RAW = "your-write-key-here";
-```
 
 ---
 
