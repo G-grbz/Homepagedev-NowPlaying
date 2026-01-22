@@ -145,15 +145,18 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap
+    white-space: nowrap;
 }
 
 #hp-nowplaying-chip .hp-np-sub {
     font-size: .82em;
     font-weight: 500;
-    margin-left: 6px;
     opacity: .75;
-    white-space: nowrap
+    white-space: nowrap;
+    max-width: max-content;
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
 }
 
 #hp-nowplaying-chip .hp-np-sep {
@@ -322,14 +325,6 @@
         width: 50px
     }
 
-    #hp-nowplaying-chip .hp-np-controls button.hp-np-btn {
-        backdrop-filter: none;
-        background: transparent;
-        border: none;
-        border-radius: 50px;
-        height: 20px;
-        width: 0
-    }
 
     #hp-nowplaying-chip .hp-np-controls button.hp-np-btn svg {
         stroke-width: 2.2;
