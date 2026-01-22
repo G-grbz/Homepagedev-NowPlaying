@@ -394,12 +394,16 @@
       time.textContent = "0:00 / 0:00";
       fill.style.width = "0%";
       el.classList.add("is-stale");
+      el.classList.remove("is-playing", "is-paused");
       return;
     }
 
     const title = safeStr(active.title);
     const artist = normArtist(active.artist);
     const playing = !!active.playing;
+
+    el.classList.toggle("is-playing", playing);
+    el.classList.toggle("is-paused", !playing);
 
     text.innerHTML = title && artist
       ? `🎵 ${escHtml(title)} <span class="hp-np-sep">&amp;</span> ${escHtml(artist)}`
