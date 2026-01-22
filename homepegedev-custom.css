@@ -361,3 +361,6 @@
         margin-left: auto
     }
 }
+.overflow-auto {
+    overflow: visible;
+}
