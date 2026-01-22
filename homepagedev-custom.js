@@ -400,14 +400,24 @@
 
     const title = safeStr(active.title);
     const artist = normArtist(active.artist);
+    const album = safeStr(active.album);
+    let year = Number(active.year || 0);
+    if (!(year >= 1900 && year <= 2100)) year = 0;
     const playing = !!active.playing;
 
     el.classList.toggle("is-playing", playing);
     el.classList.toggle("is-paused", !playing);
 
-    text.innerHTML = title && artist
+    const top = title && artist
       ? `🎵 ${escHtml(title)} <span class="hp-np-sep">&amp;</span> ${escHtml(artist)}`
-      : `🎵 ${escHtml(title)}`;
+      : `🎵 ${escHtml(title) || "Unknown"}`;
+
+    const sub = album
+      ? `<span class="hp-np-sub">💿 ${escHtml(album)}${year ? ` <span class="hp-np-year">(${year})</span>` : ""}</span>`
+      : "";
+
+    text.innerHTML = `${top}${sub}`;
+    el.title = [title, artist, album, (year || "")].filter(Boolean).join(" • ");
 
     if (active.cover) {
       cover.src = active.cover;
