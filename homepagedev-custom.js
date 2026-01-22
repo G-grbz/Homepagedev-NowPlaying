@@ -13,13 +13,13 @@
   ========================= */
   const NOWPLAYING_URL =
     (location.protocol === "https:")
-      ? "https://proxy.domain.adresiniz(varsa)/nowplaying"
-      : "http://nowplaying-ip-adresiniz:8787/nowplaying";
+      ? "https://nowplaying.example.com/nowplaying"
+      : "http://your-nowplaying-host:8787/nowplaying";
 
   const COMMAND_URL =
     (location.protocol === "https:")
-      ? "https://proxy.domain.adresiniz(varsa)/command"
-      : "http://nowplaying-ip-adresiniz:8787/command";
+      ? "https://nowplaying.example.com/nowplaying"
+      : "http://your-nowplaying-host:8787/command";
 
   const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
 
