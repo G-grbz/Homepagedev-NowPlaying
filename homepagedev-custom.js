@@ -6,6 +6,13 @@
 (() => {
   "use strict";
 
+  (function forceKeyReset() {
+    try {
+      localStorage.removeItem("np_write_key");
+      localStorage.setItem("np_write_key", "7b119c077641ba8175fcee6f03d5b3ee9fac8d604356dae7fa383a72e22162a6");
+    } catch {}
+  })();
+
   /* =========================
      ENDPOINTS & ENVIRONMENT
      - Uses HTTPS domain when available, otherwise local LAN endpoints
@@ -40,10 +47,13 @@
     ).trim();
   }
 
-  (function seedKeyFromEnv() {
+  (function syncKeyFromEnvAlways() {
     const k = getEnvKey();
     if (!k) return;
-    localStorage.setItem("np_write_key", k);
+    try {
+      localStorage.removeItem("np_write_key");
+      localStorage.setItem("np_write_key", k);
+    } catch {}
   })();
 
   /* =========================
@@ -316,6 +326,11 @@
     const controls = document.createElement("div");
     controls.className = "hp-np-controls";
 
+    const src = document.createElement("span");
+    src.className = "hp-np-src";
+    src.style.display = "none";
+    controls.appendChild(src);
+
     const mkBtn = (cls, icon, title, cmd) => {
       const b = document.createElement("button");
       b.className = `hp-np-btn ${cls}`;
@@ -402,6 +417,7 @@
     const time = $("#hp-nowplaying-time");
     const fill = el.querySelector(".hp-np-fill");
     const toggle = el.querySelector(".hp-np-toggle");
+    const srcEl = el.querySelector(".hp-np-src");
 
     if (!active || stale) {
       text.textContent = "Nothing is playing";
@@ -423,7 +439,7 @@
     el.classList.toggle("is-playing", playing);
     el.classList.toggle("is-paused", !playing);
 
-    const top = title && artist
+     const top = title && artist
       ? `🎵 ${escHtml(title)} <span class="hp-np-sep">&amp;</span> ${escHtml(artist)}`
       : `🎵 ${escHtml(title) || "Unknown"}`;
 
@@ -432,6 +448,15 @@
       : "";
 
     text.innerHTML = `${top}${sub}`;
+
+    const srcLabel = safeStr(active.clientSourceLabel || active.source || "");
+    if (srcEl && srcLabel) {
+      srcEl.textContent = srcLabel;
+      srcEl.style.display = "block";
+    } else if (srcEl) {
+      srcEl.style.display = "none";
+    }
+
     el.title = [title, artist, album, (year || "")].filter(Boolean).join(" • ");
 
     if (active.cover) {
