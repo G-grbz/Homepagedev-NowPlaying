@@ -78,7 +78,7 @@
     background: var(--glass-strong)!important;
     border-color: var(--glass-border-strong)!important;
     box-shadow: var(--shadow-hover)!important;
-    transform: translate(-50%,-2px)
+    transform: translate(-50%)
 }
 
 #hp-nowplaying-chip.is-stale {
@@ -100,7 +100,8 @@
 }
 
 #hp-nowplaying-chip.is-paused {
-    border-left: 4px solid #f59e0b!important
+    border-left: 4px solid #f59e0b!important;
+    transition: opacity .5s ease
 }
 
 #hp-nowplaying-chip.is-paused #hp-nowplaying-cover {
@@ -109,7 +110,8 @@
 }
 
 #hp-nowplaying-chip.is-paused .hp-np-controls button {
-    opacity: .85
+    opacity: .85;
+    transition: opacity .5s ease
 }
 
 #hp-nowplaying-chip.is-paused .hp-np-fill {
@@ -122,7 +124,8 @@
 
 :root.dark #hp-nowplaying-chip.is-paused {
     border-left: 4px solid #f59e0b!important;
-    opacity: .85
+    opacity: .85;
+    transition: opacity .5s ease
 }
 
 #hp-nowplaying-chip.is-no-key:before {
@@ -141,7 +144,8 @@
     flex: 1;
     gap: 12px;
     min-width: 0;
-    padding: 10px 0
+    padding: 10px 0;
+    transition: opacity .5s ease
 }
 
 #hp-nowplaying-dot {
@@ -158,7 +162,7 @@
     border-radius: 1px;
     height: 10px;
     opacity: .8;
-    transition: height .15s ease;
+    transition: opacity .5s ease,transform .5s ease;
     width: 3px
 }
 
@@ -200,7 +204,8 @@
     filter: none;
     flex-shrink: 0;
     height: 68px;
-    object-fit: cover
+    object-fit: cover;
+    transition: filter .5s ease,opacity .5s ease
 }
 
 #hp-nowplaying-text {
@@ -251,7 +256,8 @@
     justify-content: center;
     margin-left: auto;
     min-width: 140px;
-    padding: 10px 0 10px 12px
+    padding: 10px 0 10px 12px;
+    transition: opacity .5s ease
 }
 
 .hp-np-buttons,.hp-np-controls {
@@ -281,7 +287,6 @@
 }
 
 .hp-np-btn:hover {
-    background: var(--inner-glass);
     color: var(--link)!important;
     opacity: 1;
     transform: translateY(-1px)
@@ -299,25 +304,21 @@
 
 .hp-np-bar {
     background: var(--inner-border);
-    border-radius: 2px;
     cursor: pointer;
-    height: 4px;
-    overflow: hidden;
-    position: relative;
+    height: 6px;
     transition: height .15s ease;
     width: 100%
 }
 
-.hp-np-bar:hover {
-    height: 6px
+.hp-np-bar,.hp-np-fill {
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative
 }
 
 .hp-np-fill {
     background: linear-gradient(90deg,#3f51b5,var(--link-hover));
-    border-radius: 2px;
     height: 100%;
-    overflow: hidden;
-    position: relative;
     transition: width .5s ease;
     width: 0
 }
@@ -345,7 +346,8 @@
     font-size: 11px;
     font-variant-numeric: tabular-nums;
     letter-spacing: -.02em;
-    opacity: .9
+    opacity: .9;
+    transition: opacity .5s ease
 }
 
 .dark #hp-nowplaying-chip,:root.dark #hp-nowplaying-chip {
@@ -446,4 +448,34 @@
 
 .overflow-auto {
     overflow: visible
+}
+
+#hp-nowplaying-chip .hp-np-controls {
+    position: relative
+}
+
+#hp-nowplaying-chip .hp-np-src {
+    box-sizing: border-box;
+    color: var(--link)!important;
+    display: block;
+    font-size: 10px;
+    letter-spacing: .04em;
+    opacity: .75;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    text-overflow: ellipsis;
+    top: 2px;
+    white-space: nowrap;
+    width: 100%
+}
+
+span.hp-np-sep {
+    color: var(--link)!important;
+    font-size: 12px
+}
+
+.hp-np-bar .hp-np-fill {
+    transition: width .5s ease,opacity .5s ease
 }
