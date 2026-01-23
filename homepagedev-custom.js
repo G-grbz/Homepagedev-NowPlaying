@@ -192,6 +192,11 @@
   function openNowPlaying(active) {
     const { app, http } = preferredOpenUrl(active);
 
+    if (http && http.startsWith("file://")) {
+      window.open(FALLBACK_HREF, PLAYER_TARGET);
+      return;
+    }
+
     if (app) {
       const w1 = window.open(app, PLAYER_TARGET);
       setTimeout(() => {
@@ -289,7 +294,13 @@
 
     const dot = document.createElement("span");
     dot.id = "hp-nowplaying-dot";
-    dot.textContent = "●";
+    dot.classList.add("hp-eq");
+    dot.setAttribute("aria-hidden", "true");
+    dot.innerHTML = `
+      <span class="hp-eq-bar"></span>
+      <span class="hp-eq-bar"></span>
+      <span class="hp-eq-bar"></span>
+    `;
 
     const cover = document.createElement("img");
     cover.id = "hp-nowplaying-cover";
