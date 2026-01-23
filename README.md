@@ -2,7 +2,6 @@
 
 <img width="1919" height="310" alt="nwp" src="https://github.com/user-attachments/assets/d445f621-64bd-4720-8e76-0aa94b71429a" />
 
-
 This repo adds a slick **“Now Playing” chip** to **HomePageDev**: cover art, title/artist, progress, and quick controls (**prev / play‑pause / next / seek**).
 
 It’s intentionally split into two layers:
@@ -33,7 +32,7 @@ Optional (Linux only): the server can also bridge **MPRIS** (desktop media contr
 * YouTube Music (`music.youtube.com`)
 * Spotify Web (`open.spotify.com`)
 
-For browser sources, you’ll typically use the **Tampermonkey userscript** (included below) to:
+For browser sources, you’ll typically use the **Tampermonkey userscript** to:
 
 * read what’s currently playing in the tab
 * send it to the server
@@ -54,12 +53,12 @@ MPRIS is a Linux desktop standard for media player control over **D‑Bus**.
 
 ### 1) Clone
 
-```
+```bash
 git clone https://github.com/G-grbz/Homepagedev-NowPlaying
 cd Homepagedev-NowPlaying
 ```
 
-### 2) Generate a `WRITE_KEY` (simple example)
+### 2) Generate a `WRITE_KEY` (manual)
 
 You need a secret key to protect write/control endpoints (`POST /nowplaying` and `POST /command`).
 
@@ -124,7 +123,277 @@ docker compose up -d
 
 ---
 
-## HomePageDev setup (this is the important part)
+# Automated installation (install.sh)
+
+This repo also ships with a **fully automated installer script** that sets everything up for you in one go.
+
+If you don’t want to manually:
+
+* generate keys
+* edit `.env`
+* patch `homepagedev-custom.js`
+* patch `tampermonkey.script.txt`
+* copy JS/CSS into Homepage
+
+…then **this script is for you**.
+
+The goal of `install.sh` is simple:
+
+> **One command → working Now Playing widget** 🚀
+
+---
+
+## What the installer does
+
+When you run `install.sh`, it will:
+
+1. **Detect your LAN IP** automatically
+2. **Generate secure secrets**
+
+   * `WRITE_KEY`
+   * `SEED_TOKEN`
+3. **Create a fresh `.env` file** for Docker Compose
+4. **Patch project files**
+
+   * `homepagedev-custom.js`
+   * `tampermonkey.script.txt` (if present)
+5. **Optionally modify Homepage**
+
+   * Append or update the Now Playing JS/CSS blocks
+   * Automatically back up existing files
+6. **Optionally start Docker Compose**
+
+Everything is reversible:
+
+* Homepage files are backed up
+* Blocks are wrapped in `NOWPLAYING BEGIN / END` markers
+
+---
+
+## Requirements
+
+Make sure these are installed before running the script:
+
+* **bash**
+* **Docker**
+* **Docker Compose** (`docker compose` or `docker-compose`)
+* One of:
+
+  * `openssl` **or**
+  * `python3`
+
+On Linux, MPRIS is supported by default (can be disabled).
+
+---
+
+## Basic usage
+
+From the project root:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+This runs in **safe default mode**:
+
+* Homepage is patched interactively
+* Docker is **not** started
+* Existing Homepage blocks are **not overwritten**
+
+---
+
+## Common examples
+
+### 1) Quick local install (LAN only)
+
+```bash
+./install.sh --up
+```
+
+What happens:
+
+* LAN IP is auto-detected
+* `.env` is generated
+* Homepage JS/CSS is appended
+* Containers are built and started
+
+---
+
+### 2) HTTPS / reverse-proxy setup
+
+If you use a domain like `nowplaying.example.com`:
+
+```bash
+./install.sh \
+  --domain nowplaying.example.com \
+  --up
+```
+
+Effects:
+
+* JS endpoints use `https://nowplaying.example.com`
+* Tampermonkey uses HTTPS
+* `.env` includes `NOWPLAYING_DOMAIN`
+
+---
+
+### 3) Update existing Homepage blocks
+
+If you already ran the installer before and want to refresh everything:
+
+```bash
+./install.sh --mode update
+```
+
+This will:
+
+* Remove old NOWPLAYING blocks
+* Write clean, fresh JS/CSS
+* Keep unrelated Homepage code untouched
+
+---
+
+### 4) Non-interactive Homepage path
+
+Useful for servers / SSH installs:
+
+```bash
+./install.sh \
+  --homepage-dir /home/username/.homepage/config \
+  --up
+```
+
+No prompts — fully automated.
+
+---
+
+### 5) Skip Homepage modification entirely
+
+If you only want the server + Tampermonkey:
+
+```bash
+./install.sh --skip-homepage --up
+```
+
+You can paste JS/CSS manually later.
+
+---
+
+### 6) Disable MPRIS (browser-only mode)
+
+```bash
+./install.sh --no-mpris
+```
+
+Result:
+
+* `ENABLE_MPRIS=0`
+* No D-Bus or session bus is used
+
+Perfect for non-Linux systems or headless servers.
+
+---
+
+### 7) Force container recreation
+
+```bash
+./install.sh --up --recreate
+```
+
+Equivalent to:
+
+```bash
+docker compose up -d --build --force-recreate --remove-orphans
+```
+
+---
+
+## Installer options (full list)
+
+```text
+--up               Start Docker Compose after setup
+--no-up            Do not start Docker Compose (default)
+--recreate         Force container recreation (with --up)
+
+--domain <domain>  HTTPS domain for endpoints
+--port <port>      Override server port (default: 8787)
+
+--mode append      Append blocks if missing (default)
+--mode update      Remove old blocks and write fresh ones
+
+--homepage-dir     Homepage config directory path
+--skip-homepage    Do not touch Homepage files
+
+--mpris            Enable MPRIS (default)
+--no-mpris         Disable MPRIS
+
+--help             Show help
+```
+
+---
+
+## Files generated / modified
+
+### Generated
+
+* `.env` (Docker environment)
+
+### Modified (with backups)
+
+* `homepagedev-custom.js`
+* `tampermonkey.script.txt`
+* `Homepage/custom.js`
+* `Homepage/custom.css`
+
+Backups look like:
+
+```text
+custom.js.bak.20260123-235959
+```
+
+---
+
+## After installation
+
+The script prints everything you need at the end:
+
+```text
+LAN_IP: 192.168.1.29
+PORT: 8787
+DOMAIN: nowplaying.example.com
+WRITE_KEY: <generated>
+SEED_TOKEN: <generated>
+```
+
+### Important final step (Homepage env)
+
+If Homepage uses environment variables, **set this**:
+
+```env
+HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY=<WRITE_KEY>
+```
+
+Without it:
+
+* Widget still renders
+* Controls will not work
+
+---
+
+## When should you NOT use the installer?
+
+* If you want full manual control
+* If you are debugging custom JS logic
+* If you intentionally don’t want automatic patching
+
+Otherwise: use the installer — it’s fast, safe, and repeatable.
+
+---
+
+## HomePageDev setup (manual)
+
+> If you used `install.sh` with Homepage enabled, you can skip most of this section.
 
 ### 1) Add the widget JS to HomePageDev `custom.js`
 
@@ -132,20 +401,20 @@ Take the contents of:
 
 * `homepagedev-custom.js`
 
-…and **paste it into HomePageDev’s `custom.js`** (Settings/Config → Custom → **Custom JavaScript**, or however you manage HomePageDev’s custom files).
+…and paste it into HomePageDev’s `custom.js`.
 
 Then edit these lines in the script:
 
 ```js
 const NOWPLAYING_URL =
-    (location.protocol === "https:")
-      ? "https://nowplaying.example.com/nowplaying"
-      : "http://your-nowplaying-host:8787/nowplaying";
+  (location.protocol === "https:")
+    ? "https://nowplaying.example.com/nowplaying"
+    : "http://your-nowplaying-host:8787/nowplaying";
 
-  const COMMAND_URL =
-    (location.protocol === "https:")
-      ? "https://nowplaying.example.com/command"
-      : "http://your-nowplaying-host:8787/command";
+const COMMAND_URL =
+  (location.protocol === "https:")
+    ? "https://nowplaying.example.com/command"
+    : "http://your-nowplaying-host:8787/command";
 ```
 
 Replace with your real endpoints.
@@ -161,37 +430,36 @@ Examples:
 
   * `https://nowplaying.example.com/nowplaying`
   * `https://nowplaying.example.com/command`
- 
- ### Write Key Configuration
+
+### Write key configuration
 
 ```js
 const ENV_RAW = "{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}";
 ```
 
-This variable is used to provide the **write key** required by the NowPlaying service.
+This placeholder is used to provide the **write key** required by the NowPlaying service.
 
+#### Option 1: Using environment variables (recommended)
 
-### Option 1: Using environment variables (recommended)
-
-If you are using environment variables with **Homepage.dev**, add your generated write key to your `.env` file:
+If you are using environment variables with Homepage.dev, add your generated write key:
 
 ```env
 HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY=your-write-key-here
 ```
 
-Homepage will automatically inject this value into `custom.js` at runtime.
+Homepage will inject this value into `custom.js` at runtime.
 
----
+#### Option 2: Without environment variables
 
-### Option 2: Without environment variables
-
-If you are **not** using environment variables, update `custom.js` manually and replace the placeholder with your write key:
+If you’re not using Homepage env vars, replace the placeholder manually:
 
 ```js
 const ENV_RAW = "your-write-key-here";
 ```
 
-## Automatic Write Key Storage (localStorage)
+---
+
+## Automatic write key storage (localStorage)
 
 To automatically store `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` in the browser’s **localStorage**, the `SEED_TOKEN` defined on the server **must match** the token sent from the client.
 
@@ -203,7 +471,7 @@ On the client side, a seed token is sent via request headers:
 const headers = { "X-Seed-Token": "change-me" };
 ```
 
-On the server side, you must define the same value in your `.env` file:
+On the server side, define the same value in your `.env` file:
 
 ```env
 SEED_TOKEN=change-me
@@ -212,27 +480,26 @@ SEED_TOKEN=change-me
 If these two values are identical:
 
 * The server accepts the initial handshake
-* `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` is securely written into `localStorage`
+* `HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY` is written into `localStorage`
 * Subsequent requests can use this key automatically
 
-If the values **do not match**, the request is rejected and **no data is written** to localStorage.
+If the values **do not match**, the request is rejected and **no data is written**.
 
 ---
 
-
-### 2) Add the CSS to HomePageDev `custom.css`
+## 2) Add the CSS to HomePageDev `custom.css`
 
 Take the contents of:
 
 * `homepagedev-custom.css`
 
-…and **paste it into HomePageDev’s `custom.css`** (Custom CSS).
+…and paste it into HomePageDev’s `custom.css`.
 
-The JS will create the HTML for the chip; the CSS makes it look and behave correctly.
+---
 
-### 3) Provide the WRITE_KEY to HomePageDev
+## 3) Provide the WRITE_KEY to HomePageDev
 
-The widget reads the key from an env‑style placeholder:
+The widget reads the key from:
 
 * `{{HOMEPAGE_VAR_NOWPLAYING_WRITE_KEY}}`
 
@@ -260,9 +527,9 @@ This is the cleanest cross‑platform setup: it works on any OS because the brow
 
 ## Tampermonkey userscript (Spotify + YouTube + YT Music)
 
-This repository already includes the Tampermonkey script as a file:
+This repository includes the Tampermonkey script as:
 
-```
+```text
 tampermonkey.script.txt
 ```
 
@@ -277,19 +544,14 @@ This script:
 ### Install
 
 1. Install the **Tampermonkey** browser extension.
-2. Open the file:
-
-```
-tampermonkey.script.txt
-```
-
+2. Open the file `tampermonkey.script.txt`.
 3. Copy its full contents.
 4. In Tampermonkey, create a **new userscript** and paste the contents.
 5. Save the script.
 
 ### Configure the script
 
-Inside `tampermonkey.script.txt`, update the following values:
+Inside `tampermonkey.script.txt`, update:
 
 ```js
 const BASE = "http://NOWPLAYING_IP_OR_DOMAIN:8787";
@@ -317,7 +579,7 @@ In the userscript header, make sure these lines match your server:
 // @connect      192.168.1.29
 ```
 
-Add or remove `@connect` entries so they match the hostname used in `BASE`.
+Add/remove `@connect` entries so they match the hostname used in `BASE`.
 
 > ⚠️ **Important:** For playback control to work, the browser tab must remain open. The userscript is what actually clicks buttons and seeks inside the page.
 
