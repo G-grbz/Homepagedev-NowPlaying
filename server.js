@@ -309,10 +309,12 @@ function yearFromAny(x) {
 function parseMetadata(md) {
   const title = cleanStr(variantVal(md["xesam:title"]));
   const album = cleanStr(variantVal(md["xesam:album"]));
+
   const year =
-  yearFromAny(md["xesam:contentCreated"]) ||
-  yearFromAny(md["xesam:asText"]) ||
-  null;
+    yearFromAny(md["xesam:date"]) ||
+    yearFromAny(md["xesam:contentCreated"]) ||
+    yearFromAny(md["xesam:comment"]) ||
+    null;
 
   let artist = null;
   const artists = variantVal(md["xesam:artist"]);
@@ -338,6 +340,7 @@ function parseMetadata(md) {
   return { title, artist, album, year, url, cover, durationMs, trackId };
 }
 
+
 async function getMprisIfaces(name) {
   if (mpris.ifaces.has(name)) return mpris.ifaces.get(name);
 
@@ -353,8 +356,17 @@ async function getMprisIfaces(name) {
 
 async function refreshMprisPlayer(name) {
   const { props } = await getMprisIfaces(name);
-
   const all = await props.GetAll("org.mpris.MediaPlayer2.Player");
+
+  try {
+    const md = variantVal(all.Metadata) || {};
+    console.log("MPRIS:", name, "PlaybackStatus=", variantVal(all.PlaybackStatus));
+    console.log("Metadata keys:", Object.keys(md));
+    console.log("album=", variantVal(md["xesam:album"]));
+    console.log("contentCreated=", variantVal(md["xesam:contentCreated"]));
+    console.log("date=", variantVal(md["xesam:date"]));
+    console.log("comment=", variantVal(md["xesam:comment"]));
+  } catch {}
   const playback = cleanStr(variantVal(all.PlaybackStatus)) || "";
   const playing = playback.toLowerCase() === "playing";
 
@@ -597,7 +609,12 @@ app.get("/command", (req, res) => {
 
 
 app.get("/cover", async (req, res) => {
-  const u = String(req.query.u || req.query.url || "").trim();
+  let u0 = req.query.u || req.query.url || "";
+  if (Array.isArray(u0)) u0 = u0[0];
+  let u = String(u0).trim();
+  try {
+    u = decodeURIComponent(u);
+  } catch {}
   if (!u) return res.status(400).send("missing u");
 
   try {
@@ -637,7 +654,11 @@ app.get("/cover", async (req, res) => {
     const ab = await r.arrayBuffer();
     return res.send(Buffer.from(ab));
   } catch (e) {
-    console.warn("cover error:", u, e?.code, e?.message);
+    console.warn("cover error:", {
+      u,
+      code: e?.code,
+      message: e?.message,
+    });
     return res.status(500).send("cover error");
   }
 });
