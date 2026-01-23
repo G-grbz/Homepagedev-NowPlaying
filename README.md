@@ -1,6 +1,7 @@
 # Homepagedev-NowPlaying (Multi‑Source Now Playing Widget + Optional Linux MPRIS)
 
-<img width="1919" height="314" alt="nwp" src="https://github.com/user-attachments/assets/9fcb338b-f852-4f5c-9a12-0ee2cbaa077d" />
+<img width="1919" height="310" alt="nwp" src="https://github.com/user-attachments/assets/d445f621-64bd-4720-8e76-0aa94b71429a" />
+
 
 This repo adds a slick **“Now Playing” chip** to **HomePageDev**: cover art, title/artist, progress, and quick controls (**prev / play‑pause / next / seek**).
 
