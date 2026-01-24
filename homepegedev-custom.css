@@ -298,8 +298,10 @@
 
 .hp-np-btn svg {
     display: block;
-    height: 18px;
-    width: 18px
+    height: 26px;
+    width: 26px;
+    position: relative;
+    top: 5px
 }
 
 .hp-np-bar {
@@ -392,11 +394,6 @@
     .hp-np-btn {
         height: 28px;
         width: 28px
-    }
-
-    .hp-np-btn svg {
-        height: 16px;
-        width: 16px
     }
 }
 
