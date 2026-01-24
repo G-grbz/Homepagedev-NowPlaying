@@ -98,11 +98,42 @@
   function ytVideoIdFromUrl(u) {
     try {
       const url = new URL(u);
-      if (url.hostname === "youtu.be") return url.pathname.replace("/", "");
-      return url.searchParams.get("v") || "";
+      const host = (url.hostname || "").toLowerCase();
+
+      if (host === "youtu.be") return url.pathname.replace("/", "").split("/")[0] || "";
+
+      const v = url.searchParams.get("v");
+      if (v) return v;
+
+      const m = url.pathname.match(/\/(shorts|embed|live)\/([A-Za-z0-9_-]{6,})/);
+      if (m) return m[2] || "";
+
+      const m2 = url.pathname.match(/\/v\/([A-Za-z0-9_-]{6,})/);
+      if (m2) return m2[1] || "";
+
+      return "";
     } catch {
       return "";
     }
+  }
+
+  function looksLikeBadYtCover(u) {
+    const s = (u || "").toLowerCase();
+    if (!s) return true;
+    if (s.includes("yt3.ggpht.com")) return true;
+    if (s.includes("s.ytimg.com")) return true;
+    if (s.includes("www.youtube.com/img")) return true;
+    if (s.includes("logo")) return true;
+    return false;
+  }
+
+  function ytThumbsForId(vid) {
+    if (!vid) return [];
+    return [
+      `https://i.ytimg.com/vi/${vid}/maxresdefault.jpg`,
+      `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+      `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`,
+    ];
   }
 
   function readYouTubeMusic() {
@@ -142,11 +173,17 @@
 
     const url = location.href;
 
-    let cover = clean(meta("og:image"));
-    if (!cover) {
-      const vid = ytVideoIdFromUrl(url);
-      if (vid) cover = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
+    const vid = ytVideoIdFromUrl(url);
+    const og = clean(meta("og:image"));
+
+    let cover = "";
+    if (vid) {
+      const thumbs = ytThumbsForId(vid);
+      cover = thumbs[0] || "";
     }
+
+    if (!cover && og && !looksLikeBadYtCover(og)) cover = og;
+    if (!cover && vid) cover = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
 
     const v = $("video");
     const playing = v ? !v.paused : false;
