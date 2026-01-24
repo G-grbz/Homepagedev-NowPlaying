@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 8787;
 const WRITE_KEY = process.env.WRITE_KEY || "change-me";
 const SEED_TOKEN = process.env.SEED_TOKEN || "";
 const STALE_MS = Number(process.env.STALE_MS || 15000);
+const TM_TTL_MS = Number(process.env.TM_TTL_MS || 12000);
 const COVER_PROXY_ALLOW = String(process.env.COVER_PROXY_ALLOW || "i.scdn.co,i.ytimg.com")
   .split(",")
   .map((s) => s.trim())
@@ -131,12 +132,35 @@ function sanitizeIncoming(b, prev) {
   };
 }
 
+const TM_SOURCES = new Set(
+  String(process.env.TM_SOURCES || "ytmusic,youtube")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+function isFresh(ts, ttlMs) {
+  return !!ts && (Date.now() - ts) <= ttlMs;
+}
+
+function isTamperFresh(now = Date.now()) {
+  for (const k of TM_SOURCES) {
+    const s = states[k];
+    if (s && s.ts && (now - s.ts) <= TM_TTL_MS) return true;
+  }
+  return false;
+}
+
 function pickActive(now = Date.now()) {
-  const list = Object.values(states).map((s) => {
+  const suppressMpris = isTamperFresh(now);
+
+  const list = Object.values(states)
+    .filter((s) => !(suppressMpris && s.source === "mpris"))
+    .map((s) => {
     const age = s.ts ? (now - s.ts) : Infinity;
     const stale = age > STALE_MS;
     return { ...s, age, stale };
-  });
+    });
 
   const fresh = list.filter((s) => !s.stale);
   const playingFresh = fresh.filter((s) => s.playing);
@@ -190,9 +214,50 @@ function coverForClient(coverRaw, req) {
   return c;
 }
 
+function humanizeMprisName(name) {
+  const n = String(name || "").toLowerCase();
+
+  if (n.includes("vlc")) return { key: "vlc", label: "VLC" };
+  if (n.includes("spotify")) return { key: "spotify", label: "Spotify" };
+  if (n.includes("chrom")) return { key: "chrome", label: "Chrome" };
+  if (n.includes("brave")) return { key: "brave", label: "Brave" };
+  if (n.includes("vivaldi")) return { key: "vivaldi", label: "Vivaldi" };
+  if (n.includes("edge")) return { key: "edge", label: "Edge" };
+  if (n.includes("firefox")) return { key: "firefox", label: "Firefox" };
+  if (n.includes("mpv")) return { key: "mpv", label: "mpv" };
+  if (n.includes("kodi")) return { key: "kodi", label: "Kodi" };
+  if (n.includes("jellyfin")) return { key: "jellyfin", label: "Jellyfin" };
+
+  const last = n.split(".").filter(Boolean).pop() || "mpris";
+  return { key: last, label: last.toUpperCase() };
+}
+
+function clientSourceInfo(s) {
+  if (!s) return { key: "none", label: "" };
+
+  if (s.source && s.source !== "mpris") {
+    const src = String(s.source);
+    const map = {
+      spotify: { key: "spotify", label: "Spotify" },
+      ytmusic: { key: "ytmusic", label: "YouTube Music" },
+      youtube: { key: "youtube", label: "YouTube" },
+      other: { key: "other", label: "Other" },
+    };
+    return map[src] || { key: src, label: src };
+  }
+
+  return humanizeMprisName(s._playerName);
+}
+
 function mapStateForClient(s, req) {
   if (!s) return s;
-  return { ...s, cover: coverForClient(s.cover, req) };
+  const src = clientSourceInfo(s);
+  return {
+    ...s,
+    cover: coverForClient(s.cover, req),
+    clientSourceKey: src.key,
+    clientSourceLabel: src.label,
+  };
 }
 
 /* =========================
@@ -558,10 +623,15 @@ app.get("/widget-key", (req, res) => {
 });
 
 app.get("/nowplaying", (req, res) => {
-  const picked = pickActive(Date.now());
+  const now = Date.now();
+  const picked = pickActive(now);
+  const suppressMpris = isTamperFresh(now);
 
   const mappedStates = Object.fromEntries(
-    Object.entries(states).map(([k, v]) => [k, mapStateForClient(v, req)])
+    Object.entries(states).map(([k, v]) => [
+      k,
+      (suppressMpris && k === "mpris") ? null : mapStateForClient(v, req)
+    ])
   );
 
   res.json({
@@ -596,7 +666,7 @@ app.post("/command", async (req, res) => {
 
   cmd = { id: cmd.id + 1, action, value, ts: Date.now() };
 
-  const executed = await execMprisCommand(action, value);
+  const executed = isTamperFresh(Date.now()) ? false : await execMprisCommand(action, value);
 
   res.json({ ok: true, cmd, executed });
 });
